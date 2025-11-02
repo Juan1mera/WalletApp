@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:wallet_app/core/constants/colors.dart';
 import 'package:wallet_app/presentation/widgets/auth/auth_gate.dart';
 
 void main() async {
@@ -25,8 +26,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Wallet App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.purple400),
         useMaterial3: true,
+        scaffoldBackgroundColor: AppColors.background1
       ),
       home: const SupabaseGate(),
       debugShowCheckedModeBanner: false,

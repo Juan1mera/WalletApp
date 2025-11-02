@@ -68,82 +68,79 @@ class _MainBottomNavState extends State<MainBottomNav> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.fondoSecundario,
+      // backgroundColor: AppColors.background4,
       // extendBody permite que el contenido se extienda detrás del bottomNavigationBar
       extendBody: true,
       body: _screens[_selectedIndex],
       bottomNavigationBar: Container(
-        color: Colors.transparent, // Asi el fondo sera transparente
-        child: Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.fondoSecundario, // Fondo de la pastilla
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: _navItems.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              final isSelected = index == _selectedIndex;
+        margin: const EdgeInsets.symmetric(vertical: 30, horizontal: 70),
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
+        decoration: BoxDecoration(
+          color: AppColors.background4,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: _navItems.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            final isSelected = index == _selectedIndex;
 
-              return GestureDetector(
-                onTap: () => _onItemTapped(index),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isSelected ? 20 : 12,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.verdeLight
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: AnimatedBuilder(
-                    animation: _scaleAnimation,
-                    builder: (context, child) {
-                      return Transform.scale(
-                        scale: isSelected && _animationController.isAnimating
-                            ? _scaleAnimation.value
-                            : 1.0,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              item.icon,
-                              color: isSelected
-                                  ? AppColors.fondoPrincipal
-                                  : Color.fromRGBO(255, 255, 255, 0.6),
-                              size: 24,
-                            ),
-                            if (isSelected) ...[
-                              const SizedBox(width: 8),
-                              AnimatedOpacity(
-                                duration: const Duration(milliseconds: 300),
-                                opacity: isSelected ? 1.0 : 0.0,
-                                child: Text(
-                                  item.label,
-                                  style: TextStyle(
-                                    color: AppColors.fondoPrincipal,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
+            return GestureDetector(
+              onTap: () => _onItemTapped(index),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isSelected ? 10 : 12,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.purple200
+                      : AppColors.background5,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: AnimatedBuilder(
+                  animation: _scaleAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: isSelected && _animationController.isAnimating
+                          ? _scaleAnimation.value
+                          : 1.0,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            item.icon,
+                            color: isSelected
+                                ? AppColors.background4
+                                : AppColors.background1,
+                            size: 24,
+                          ),
+                          if (isSelected) ...[
+                            const SizedBox(width: 8),
+                            AnimatedOpacity(
+                              duration: const Duration(milliseconds: 500),
+                              opacity: isSelected ? 1.0 : 0.0,
+                              child: Text(
+                                item.label,
+                                style: TextStyle(
+                                  color: AppColors.background4,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
                                 ),
                               ),
-                            ],
+                            ),
                           ],
-                        ),
-                      );
-                    },
-                  ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              );
-            }).toList(),
-          ),
+              ),
+            );
+          }).toList(),
         ),
       ),
     );
