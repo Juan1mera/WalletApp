@@ -13,7 +13,7 @@ class _StatsScreenState extends State<StatsScreen> {
 @override
 Widget build(BuildContext context) {
   return Scaffold(
-    appBar: CustomHeader(title: 'Tienda'),
+    appBar: CustomHeader(title: 'Stats'),
     body: Column(
       children: [
         const Expanded(

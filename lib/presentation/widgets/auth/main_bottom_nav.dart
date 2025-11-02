@@ -26,10 +26,10 @@ class _MainBottomNavState extends State<MainBottomNav> with TickerProviderStateM
   ];
 
   final List<NavItem> _navItems = [
-    NavItem(icon: Icons.home, label: 'Principal'),
-    NavItem(icon: Icons.pets, label: 'Animales'),
-    NavItem(icon: Icons.store, label: 'Tienda'),
-    NavItem(icon: Icons.person, label: 'Perfil'),
+    NavItem(icon: Icons.home, label: 'Home'),
+    NavItem(icon: Icons.wallet, label: 'Wallets'),
+    NavItem(icon: Icons.view_kanban_outlined, label: 'Stats'),
+    NavItem(icon: Icons.person, label: 'Profile'),
   ];
 
   @override

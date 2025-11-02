@@ -13,7 +13,7 @@ class _WalletsScreenState extends State<WalletsScreen> {
 @override
 Widget build(BuildContext context) {
   return Scaffold(
-    appBar: CustomHeader(title: 'Tienda'),
+    appBar: CustomHeader(title: 'Wallets'),
     body: Column(
       children: [
         const Expanded(

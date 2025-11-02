@@ -13,7 +13,7 @@ class _HomeScreenState extends State<HomeScreen> {
 @override
 Widget build(BuildContext context) {
   return Scaffold(
-    appBar: CustomHeader(title: 'Tienda'),
+    appBar: CustomHeader(title: 'Home'),
     body: Column(
       children: [
         const Expanded(
