@@ -9,7 +9,6 @@ class CustomNumberField extends StatefulWidget {
   final Function(double)? onChanged;
   final TextEditingController? controller;
   final String? hintText;
-  final IconData? icon;
 
   const CustomNumberField({
     super.key,
@@ -17,7 +16,6 @@ class CustomNumberField extends StatefulWidget {
     this.onChanged,
     this.controller,
     this.hintText,
-    this.icon,
   });
 
   @override
@@ -31,7 +29,7 @@ class _CustomNumberFieldState extends State<CustomNumberField>
   late Animation<double> _scaleAnimation;
 
   NumberFormat? _formatter;
-  String _currentText = '';
+  bool _isUpdating = false;
 
   @override
   void initState() {
@@ -47,7 +45,7 @@ class _CustomNumberFieldState extends State<CustomNumberField>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
 
-    _controller.addListener(_formatInput);
+    _controller.addListener(_onTextChanged);
   }
 
   @override
@@ -55,17 +53,14 @@ class _CustomNumberFieldState extends State<CustomNumberField>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.currency != widget.currency) {
       _setupFormatter();
-      _formatInput();
     }
   }
 
   void _setupFormatter() {
     final locale = _getLocaleForCurrency(widget.currency);
-    _formatter = NumberFormat.currency(
-      locale: locale,
-      symbol: _getCurrencySymbol(widget.currency),
-      decimalDigits: 2,
-    );
+    _formatter = NumberFormat.decimalPattern(locale);
+    _formatter!.minimumFractionDigits = 2;
+    _formatter!.maximumFractionDigits = 2;
   }
 
   String _getLocaleForCurrency(String currency) {
@@ -77,6 +72,8 @@ class _CustomNumberFieldState extends State<CustomNumberField>
       'MXN': 'es_MX',
       'BRL': 'pt_BR',
       'INR': 'en_IN',
+      'COP': 'es_CO',
+      'RUB': 'ru_RU',
     };
     return localeMap[currency] ?? 'en_US';
   }
@@ -90,34 +87,45 @@ class _CustomNumberFieldState extends State<CustomNumberField>
       'MXN': r'$',
       'BRL': r'R$',
       'INR': '₹',
+      'COP': r'$',
+      'RUB': '₽',
     };
     return symbols[currency] ?? currency;
   }
 
-  void _formatInput() {
-    final text = _controller.text;
-    if (text == _currentText) return;
+  void _onTextChanged() {
+    if (_isUpdating) return;
 
-    final cleaned = text.replaceAll(RegExp(r'[^\d]'), '');
-    if (cleaned.isEmpty) {
-      _currentText = '';
+    final text = _controller.text;
+    
+    // Extraer solo números
+    final digitsOnly = text.replaceAll(RegExp(r'[^\d]'), '');
+
+    // Si está vacío, limpiar todo
+    if (digitsOnly.isEmpty) {
+      _isUpdating = true;
+      _controller.text = '';
+      _controller.selection = const TextSelection.collapsed(offset: 0);
+      _isUpdating = false;
       widget.onChanged?.call(0.0);
       return;
     }
 
-    final value = double.parse(cleaned) / 100;
+    // Convertir a número decimal (dividir entre 100 para obtener centavos)
+    final value = double.parse(digitsOnly) / 100.0;
+
+    // Formatear con separadores de miles y decimales
     final formatted = _formatter!.format(value);
 
-    _currentText = formatted;
-    final oldSelection = _controller.selection;
-    final cursorPos = oldSelection.baseOffset;
-
+    // Actualizar el campo
+    _isUpdating = true;
     _controller.text = formatted;
-    final newCursorPos = cursorPos + (formatted.length - text.length);
-    _controller.selection = TextSelection.collapsed(
-      offset: newCursorPos.clamp(0, formatted.length),
-    );
+    
+    // Colocar cursor al final siempre
+    _controller.selection = TextSelection.collapsed(offset: formatted.length);
+    _isUpdating = false;
 
+    // Notificar cambio
     widget.onChanged?.call(value);
   }
 
@@ -127,7 +135,7 @@ class _CustomNumberFieldState extends State<CustomNumberField>
 
   @override
   void dispose() {
-    _controller.removeListener(_formatInput);
+    _controller.removeListener(_onTextChanged);
     if (widget.controller == null) _controller.dispose();
     _animationController.dispose();
     super.dispose();
@@ -153,28 +161,24 @@ class _CustomNumberFieldState extends State<CustomNumberField>
               onFocusChange: _onFocusChange,
               child: TextField(
                 controller: _controller,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
                 style: const TextStyle(
                   color: AppColors.verde,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
                 decoration: InputDecoration(
-                  hintText: widget.hintText ?? '0.00',
+                  hintText: widget.hintText,
                   hintStyle: TextStyle(color: baseColor.withValues(alpha: .6)),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  prefixIcon: widget.icon != null
-                      ? Padding(
-                          padding: const EdgeInsets.only(left: 12, right: 8),
-                          child: Icon(widget.icon, color: baseColor, size: 24),
-                        )
-                      : null,
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.only(right: 12),
+                  prefix: Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 8),
                     child: Text(
                       _getCurrencySymbol(widget.currency),
                       style: const TextStyle(
@@ -184,6 +188,7 @@ class _CustomNumberFieldState extends State<CustomNumberField>
                       ),
                     ),
                   ),
+                  prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
                 ),
               ),
             ),

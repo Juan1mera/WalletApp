@@ -35,6 +35,7 @@ class _WalletsScreenState extends State<WalletsScreen> {
   final List<String> _currencies = [
     'USD',
     'COP',
+    'RUB',
     'EUR',
     'GBP',
     'MXN',
@@ -117,7 +118,6 @@ class _WalletsScreenState extends State<WalletsScreen> {
                 CustomNumberField(
                   currency: _selectedCurrency,
                   hintText: '0.00',
-                  icon: Icons.account_balance_wallet,
                   onChanged: (value) {
                     setModalState(() {
                       _initialBalance = value;
