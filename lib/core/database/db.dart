@@ -23,14 +23,67 @@ class Db {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 3, // <-- versión 3
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // Create wallets table
+    await _createTables(db);
+    await _createIndexes(db);
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Migración 1 → 2 (de la versión anterior)
+      await db.execute('ALTER TABLE transactions DROP COLUMN IF EXISTS comment');
+      await db.execute('ALTER TABLE transactions DROP COLUMN IF EXISTS currency');
+      await db.execute('ALTER TABLE transactions ADD COLUMN description TEXT');
+      await db.execute('ALTER TABLE transactions ADD COLUMN note TEXT');
+    }
+
+    if (oldVersion < 3) {
+      // Migración 2 → 3: Eliminar description, hacer category_id NOT NULL
+      // SQLite no permite DROP COLUMN directamente → recrear tabla
+      await db.transaction((txn) async {
+        // 1. Crear tabla temporal
+        await txn.execute('''
+          CREATE TABLE transactions_temp(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            wallet_id INTEGER NOT NULL,
+            type TEXT NOT NULL CHECK(type IN ('expense', 'income', 'transfer')),
+            amount REAL NOT NULL,
+            note TEXT,
+            date TEXT NOT NULL,
+            category_id INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (wallet_id) REFERENCES wallets (id) ON DELETE CASCADE,
+            FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE RESTRICT
+          )
+        ''');
+
+        // 2. Copiar datos (category_id = 1 si no existe, o mantener si hay)
+        await txn.execute('''
+          INSERT INTO transactions_temp (
+            id, wallet_id, type, amount, note, date, category_id, created_at
+          )
+          SELECT 
+            id, wallet_id, type, amount, note, date, 
+            COALESCE(category_id, 1), created_at
+          FROM transactions
+        ''');
+
+        // 3. Eliminar tabla antigua
+        await txn.execute('DROP TABLE transactions');
+
+        // 4. Renombrar
+        await txn.execute('ALTER TABLE transactions_temp RENAME TO transactions');
+      });
+    }
+  }
+
+  Future<void> _createTables(Database db) async {
     await db.execute('''
       CREATE TABLE wallets(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,7 +99,6 @@ class Db {
       )
     ''');
 
-    // Create categories table
     await db.execute('''
       CREATE TABLE categories(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,44 +109,38 @@ class Db {
       )
     ''');
 
-    // Create transactions table
     await db.execute('''
       CREATE TABLE transactions(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         wallet_id INTEGER NOT NULL,
-        comment TEXT,
         type TEXT NOT NULL CHECK(type IN ('expense', 'income', 'transfer')),
         amount REAL NOT NULL,
+        note TEXT,
         date TEXT NOT NULL,
-        category_id INTEGER,
-        currency TEXT NOT NULL,
+        category_id INTEGER NOT NULL,
         created_at TEXT NOT NULL,
         FOREIGN KEY (wallet_id) REFERENCES wallets (id) ON DELETE CASCADE,
-        FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL
+        FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE RESTRICT
       )
     ''');
 
-    await _createIndexes(db);
-  }
-
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Funcion para manejar migraciones y cambios en la db
+    // Insertar categoría por defecto
+    await db.insert('categories', {
+      'name': 'Sin categoría',
+      'monthly_budget': 0.0,
+    });
   }
 
   Future<void> _createIndexes(Database db) async {
-    // Índices para mejorar rendimiento en consultas
     await db.execute('CREATE INDEX idx_wallets_is_favorite ON wallets(is_favorite)');
     await db.execute('CREATE INDEX idx_wallets_is_archived ON wallets(is_archived)');
     await db.execute('CREATE INDEX idx_wallets_type ON wallets(type)');
     await db.execute('CREATE INDEX idx_wallets_created_at ON wallets(created_at)');
-
     await db.execute('CREATE INDEX idx_categories_name ON categories(name)');
-
     await db.execute('CREATE INDEX idx_transactions_wallet ON transactions(wallet_id)');
     await db.execute('CREATE INDEX idx_transactions_type ON transactions(type)');
     await db.execute('CREATE INDEX idx_transactions_date ON transactions(date)');
     await db.execute('CREATE INDEX idx_transactions_category ON transactions(category_id)');
-    await db.execute('CREATE INDEX idx_transactions_currency ON transactions(currency)');
   }
 
   Future<void> close() async {

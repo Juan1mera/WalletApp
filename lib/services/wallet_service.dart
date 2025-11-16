@@ -66,6 +66,29 @@ class WalletService {
 
   // -------------------- Categories --------------------
 
+  Future<int> _getOrCreateCategoryId(String categoryName) async {
+    final db = await _db.database;
+
+    // Buscar si existe
+    final result = await db.query(
+      'categories',
+      where: 'LOWER(name) = LOWER(?)',
+      whereArgs: [categoryName.trim()],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['id'] as int;
+    }
+
+    // Crear nueva
+    final id = await db.insert('categories', {
+      'name': categoryName.trim(),
+      'monthly_budget': 0.0,
+    });
+
+    return id;
+  }
+
   Future<int> createCategory(Category category) async {
     final db = await _db.database;
     return await db.insert('categories', category.toMap());
@@ -108,7 +131,6 @@ class WalletService {
 
     final db = await _db.database;
 
-    // Verificar que la wallet pertenece al usuario (opcional, según tu modelo de seguridad)
     final walletCheck = await db.query(
       'wallets',
       where: 'id = ?',
@@ -117,6 +139,29 @@ class WalletService {
     if (walletCheck.isEmpty) throw Exception('Wallet not found');
 
     return await db.insert('transactions', transaction.toMap());
+  }
+
+  Future<int> createTransactionWithCategoryName({
+    required int walletId,
+    required String type,
+    required double amount,
+    required String categoryName,
+    String? note,
+  }) async {
+    final categoryId = await _getOrCreateCategoryId(categoryName);
+    final now = DateTime.now();
+
+    final transaction = Transaction(
+      walletId: walletId,
+      categoryId: categoryId,
+      type: type,
+      amount: amount,
+      note: note,
+      date: now,
+      createdAt: now,
+    );
+
+    return await createTransaction(transaction);
   }
 
   Future<List<Transaction>> getTransactionsByWallet(

@@ -6,6 +6,7 @@ import 'package:wallet_app/presentation/widgets/auth/auth_gate.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+
   // Inicializar Supabase
   await Supabase.initialize(
     url: 'https://dpryofqwatjjupnrzoqz.supabase.co',
