@@ -59,7 +59,7 @@ class CustomModal extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 20,
                 children: 
                 actions!,

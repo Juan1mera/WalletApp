@@ -4,22 +4,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wallet_app/presentation/pages/main/profile_screen/profile_screen.dart';
 
 class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
-  final VoidCallback? onMenuPress;
-  final VoidCallback? onNotificationPress;
-  final int notificationCount;
+  // Nuevo: lista opcional de ítems del menú
+  final List<PopupMenuEntry<dynamic>>? menuItems;
+  final VoidCallback? onMenuSelected; // Opcional: si quieres una acción global
 
   const CustomHeader({
     super.key,
-    this.onMenuPress,
-    this.onNotificationPress,
-    this.notificationCount = 0,
+    this.menuItems,
+    this.onMenuSelected,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Obtener avatar del usuario actual
     final user = Supabase.instance.client.auth.currentUser;
-
     final avatarUrl = user?.userMetadata?['avatar_url'] as String?;
     final userInitial = (user?.email?[0] ?? 'U').toUpperCase();
 
@@ -33,78 +30,61 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // === BOTÓN DE ATRÁS (IZQUIERDA) ===
+              // Botón atrás
               IconButton(
                 icon: const Icon(
                   Icons.arrow_back_ios,
                   size: 28,
                   color: AppColors.black,
                 ),
-                onPressed: () => Navigator.of(context).pop(), 
+                onPressed: () => Navigator.of(context).pop(),
               ),
 
-              // === NOTIFICACIONES Y PERFIL CON STACK (DERECHA) ===
+              // Área derecha: menú + avatar
               SizedBox(
                 width: 90,
                 height: 55,
                 child: Stack(
                   children: [
+                    // === BOTÓN DE MENÚ (tres puntitos) ===
                     Positioned(
                       left: 0,
-                      child: GestureDetector(
-                        onTap: onNotificationPress,
+                      child: PopupMenuButton<dynamic>(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        offset: const Offset(0, 55), // justo debajo del botón
+                        itemBuilder: (context) =>
+                            menuItems ?? <PopupMenuEntry<dynamic>>[],
+                        onSelected: (value) {
+                          onMenuSelected?.call();
+                          // Si usas PopupMenuItem con value, puedes manejarlo aquí también
+                          // o dejar que cada item tenga su propio onTap
+                        },
                         child: Container(
                           width: 55,
                           height: 55,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppColors.white,
                             shape: BoxShape.circle,
-                          ),
-                          child: Stack(
-                            children: [
-                              Center(
-                                child: Icon(
-                                  Icons.more_vert_rounded,
-                                  color: AppColors.black,
-                                  size: 24,
-                                ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
                               ),
-                              // Badge de contador
-                              if (notificationCount > 0)
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    constraints: const BoxConstraints(
-                                      minWidth: 18,
-                                      minHeight: 18,
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        notificationCount > 9
-                                            ? '9+'
-                                            : '$notificationCount',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
                             ],
+                          ),
+                          child: const Icon(
+                            Icons.more_vert_rounded,
+                            color: AppColors.black,
+                            size: 26,
                           ),
                         ),
                       ),
                     ),
 
-                    // Foto de perfil (ADELANTE - DERECHA)
+                    // === AVATAR DE PERFIL ===
                     Positioned(
                       right: 0,
                       child: GestureDetector(
@@ -119,12 +99,20 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
                         child: Container(
                           width: 55,
                           height: 55,
-                          decoration: BoxDecoration(shape: BoxShape.circle),
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
                           child: CircleAvatar(
-                            radius: 20,
+                            radius: 27.5,
                             backgroundColor: AppColors.white,
-                            backgroundImage:
-                                avatarUrl != null && avatarUrl.isNotEmpty
+                            backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
                                 ? NetworkImage(avatarUrl)
                                 : null,
                             child: avatarUrl == null || avatarUrl.isEmpty
@@ -132,7 +120,7 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
                                     userInitial,
                                     style: const TextStyle(
                                       color: Colors.black,
-                                      fontSize: 18,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   )
@@ -152,7 +140,5 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize {
-    return const Size.fromHeight(70);
-  }
+  Size get preferredSize => const Size.fromHeight(70);
 }

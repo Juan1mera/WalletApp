@@ -80,10 +80,9 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         },
       ),
       actions: [
-        CustomButton(text: 'Cancelar', bgColor: Colors.grey.shade300, textColor: Colors.black87, onPressed: () => Navigator.pop(context)),
-        const SizedBox(width: 12),
+        CustomButton(text: 'Cancell', bgColor: Colors.grey.shade300, textColor: Colors.black87, onPressed: () => Navigator.pop(context)),
         CustomButton(
-          text: 'Crear Cartera',
+          text: 'Create',
           onPressed: _isLoading ? null : _createWallet,
           isLoading: _isLoading,
           bgColor: AppColors.purple,
@@ -229,14 +228,11 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
               itemCount: wallets.length,
               itemBuilder: (context, i) {
                 final wallet = wallets[i];
-                return Opacity(
-                  opacity: wallet.isArchived ? 0.5 : 1.0,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: GestureDetector(
-                      onTap: wallet.isArchived ? null : () => Navigator.push(context, MaterialPageRoute(builder: (_) => ViewWalletScreen(walletId: wallet.id!))),
-                      child: WalletCard(wallet: wallet),
-                    ),
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ViewWalletScreen(walletId: wallet.id!))),
+                    child: WalletCard(wallet: wallet),
                   ),
                 );
               },
