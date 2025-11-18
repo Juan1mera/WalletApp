@@ -79,7 +79,6 @@ class _ViewWalletScreenState extends State<ViewWalletScreen> with SingleTickerPr
     if (mounted) setState(() => _transactions = transactions);
   }
 
-  // NUEVA NAVEGACIÓN
   void _goToCreateTransaction() async {
     if (_wallet == null) return;
 
@@ -87,8 +86,7 @@ class _ViewWalletScreenState extends State<ViewWalletScreen> with SingleTickerPr
       context,
       MaterialPageRoute(
         builder: (context) => CreateTransactionScreen(
-          walletId: _wallet!.id!,
-          currency: _wallet!.currency,
+          initialWalletId: _wallet!.id!,
         ),
       ),
     );
@@ -106,7 +104,7 @@ class _ViewWalletScreenState extends State<ViewWalletScreen> with SingleTickerPr
       appBar: CustomHeader(),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.purple,
-        onPressed: _goToCreateTransaction, // NAVEGA A LA NUEVA PANTALLA
+        onPressed: _goToCreateTransaction, 
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Nueva transacción', style: TextStyle(color: Colors.white)),
       ),

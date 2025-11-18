@@ -40,7 +40,7 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
                   size: 28,
                   color: AppColors.black,
                 ),
-                onPressed: () => Navigator.of(context).pop(), // <-- VUELVE ATRÁS
+                onPressed: () => Navigator.of(context).pop(), 
               ),
 
               // === NOTIFICACIONES Y PERFIL CON STACK (DERECHA) ===
@@ -64,7 +64,7 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
                             children: [
                               Center(
                                 child: Icon(
-                                  Icons.notifications_rounded,
+                                  Icons.more_vert_rounded,
                                   color: AppColors.black,
                                   size: 24,
                                 ),
