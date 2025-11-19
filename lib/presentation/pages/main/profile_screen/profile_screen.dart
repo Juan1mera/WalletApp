@@ -1,6 +1,5 @@
 import 'package:wallet_app/core/constants/colors.dart';
 import 'package:wallet_app/presentation/widgets/ui/custom_button.dart';
-import 'package:wallet_app/presentation/widgets/ui/custom_header.dart';
 import 'package:wallet_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -296,13 +295,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return Scaffold(
-      appBar: CustomHeader(
-
-      ),
+      
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            const SizedBox(height: 120,),
             // === AVATAR Y NOMBRE ===
             GestureDetector(
               onTap: _showImageOptions,
@@ -406,8 +404,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   await _authService.signOut();
                 }
               },
-              bgColor: AppColors.red,
-              textColor: Colors.white,
               leftIcon: const Icon(Icons.logout, color: Colors.white),
             ),
 

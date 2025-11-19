@@ -18,15 +18,17 @@ class CreateTransactionScreen extends ConsumerStatefulWidget {
   final int? initialWalletId;
   final String? initialType;
 
-  const CreateTransactionScreen({super.key, this.initialWalletId, this.initialType, });
+  const CreateTransactionScreen({
+    super.key,
+    this.initialWalletId,
+    this.initialType,
+  });
 
   @override
-  ConsumerState<CreateTransactionScreen> createState() =>
-      _CreateTransactionScreenState();
+  ConsumerState<CreateTransactionScreen> createState() => _CreateTransactionScreenState();
 }
 
-class _CreateTransactionScreenState
-    extends ConsumerState<CreateTransactionScreen> {
+class _CreateTransactionScreenState extends ConsumerState<CreateTransactionScreen> {
   final TransactionService _transactionService = TransactionService();
   final CategoryService _categoryService = CategoryService();
   final TextEditingController _noteController = TextEditingController();
@@ -44,8 +46,8 @@ class _CreateTransactionScreenState
   void initState() {
     super.initState();
     if (widget.initialType == 'income' || widget.initialType == 'expense') {
-    _type = widget.initialType!;
-  }
+      _type = widget.initialType!;
+    }
     _loadCategories();
   }
 
@@ -67,18 +69,19 @@ class _CreateTransactionScreenState
     }
   }
 
-  // Método para establecer la billetera inicial solo una vez
   void _setInitialWalletIfNeeded(List<Wallet> wallets) {
     if (_hasSetInitialWallet || wallets.isEmpty) return;
 
+    final availableWallets = wallets.where((w) => !w.isArchived).toList();
+    if (availableWallets.isEmpty) return;
+
     if (widget.initialWalletId != null) {
-      final preselected = wallets.firstWhere(
+      _selectedWallet = availableWallets.firstWhere(
         (w) => w.id == widget.initialWalletId,
-        orElse: () => wallets.first,
+        orElse: () => availableWallets.first,
       );
-      _selectedWallet = preselected;
     } else {
-      _selectedWallet = wallets.first;
+      _selectedWallet = availableWallets.first;
     }
 
     _hasSetInitialWallet = true;
@@ -87,21 +90,20 @@ class _CreateTransactionScreenState
 
   Future<void> _createTransaction() async {
     if (_amount <= 0) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Ingresa un monto válido')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingresa un monto válido')),
+      );
       return;
     }
 
     if (_selectedWallet == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Selecciona una billetera')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona una billetera')),
+      );
       return;
     }
 
-    if (_selectedCategoryName == null ||
-        _selectedCategoryName!.trim().isEmpty) {
+    if (_selectedCategoryName == null || _selectedCategoryName!.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Selecciona o crea una categoría')),
       );
@@ -114,23 +116,21 @@ class _CreateTransactionScreenState
         type: _type,
         amount: _amount,
         categoryName: _selectedCategoryName!.trim(),
-        note: _noteController.text.trim().isEmpty
-            ? null
-            : _noteController.text.trim(),
+        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Transacción creada')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Transacción creada')),
+        );
         ref.read(walletsProvider.notifier).refreshAfterTransaction();
         Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
       }
     }
   }
@@ -159,10 +159,8 @@ class _CreateTransactionScreenState
           ),
         ),
         data: (wallets) {
-          // Filtrar solo billeteras no archivadas
           final availableWallets = wallets.where((w) => !w.isArchived).toList();
-          // Establecer billetera inicial solo la primera vez
-          _setInitialWalletIfNeeded(availableWallets);
+          _setInitialWalletIfNeeded(wallets);
 
           if (availableWallets.isEmpty) {
             return const Center(
@@ -172,70 +170,62 @@ class _CreateTransactionScreenState
 
           return _isLoadingCategories
               ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [AppColors.green, AppColors.yellow],
-                      ),
+              : Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [AppColors.green, AppColors.yellow],
                     ),
+                  ),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
                     child: Column(
-                      
                       children: [
-                        CustomHeader(),
-                    
-                        // Tarjeta de la billetera seleccionada
+                        const CustomHeader(),
+                        const SizedBox(height: 20),
+
                         if (_selectedWallet != null) ...[
                           WalletMiniCard(wallet: _selectedWallet!),
                           const SizedBox(height: 20),
                         ],
-                    
-                        // Selector de billetera
+
                         CustomSelect<Wallet>(
-                          items: wallets,
+                          items: availableWallets,
                           selectedItem: _selectedWallet,
-                          getDisplayText: (wallet) =>
-                              '${wallet.name} • ${wallet.currency} ',
-                          onChanged: (wallet) {
-                            setState(() {
-                              _selectedWallet = wallet;
-                            });
-                          },
+                          getDisplayText: (wallet) => '${wallet.name} • ${wallet.currency}',
+                          onChanged: (wallet) => setState(() => _selectedWallet = wallet),
                           label: '',
                         ),
-                    
+
                         const SizedBox(height: 24),
-                    
-                        // Monto
+
                         CustomNumberField(
                           currency: _selectedWallet?.currency ?? 'USD',
                           hintText: '0.00',
                           onChanged: (val) => setState(() => _amount = val),
                         ),
-                    
+
                         const SizedBox(height: 24),
                         _buildCategorySelector(),
                         const SizedBox(height: 24),
                         _buildTypeSelector(),
                         const SizedBox(height: 24),
-                    
+
                         CustomTextField(
                           controller: _noteController,
                           label: 'Nota (opcional)',
                           hintText: 'Ej: Supermercado, salario, Netflix...',
                           maxLines: 3,
                         ),
-                    
+
+                        const SizedBox(height: 32),
+
                         CustomButton(
-                          text: 'Save',
-                          onPressed:
-                              _isLoadingCategories || walletsAsync.isLoading
-                              ? null
-                              : _createTransaction,
+                          text: 'Guardar transacción',
+                          onPressed: _createTransaction,
                         ),
-                        const SizedBox(height: 40),
                       ],
                     ),
                   ),
@@ -246,79 +236,68 @@ class _CreateTransactionScreenState
   }
 
   Widget _buildCategorySelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CustomSelect<String>(
-          label: '',
-          items: ['＋ Nueva categoría...', ..._categories.map((c) => c.name)],
-          selectedItem: _selectedCategoryName,
-          getDisplayText: (name) => name,
-          onChanged: (val) async {
-            if (val == '＋ Nueva categoría...') {
-              final controller = TextEditingController();
-              final result = await showDialog<String>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Nueva categoría'),
-                  content: TextField(
-                    controller: controller,
-                    decoration: const InputDecoration(
-                      hintText: 'Nombre de la categoría',
-                    ),
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Cancelar'),
-                    ),
-                    TextButton(
-                      onPressed: () =>
-                          Navigator.pop(ctx, controller.text.trim()),
-                      child: const Text('Crear'),
-                    ),
-                  ],
+    return CustomSelect<String>(
+      label: '',
+      items: ['＋ Nueva categoría...', ..._categories.map((c) => c.name)],
+      selectedItem: _selectedCategoryName,
+      getDisplayText: (name) => name,
+      onChanged: (val) async {
+        if (val == '＋ Nueva categoría...') {
+          final controller = TextEditingController();
+          final result = await showDialog<String>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Nueva categoría'),
+              content: TextField(
+                controller: controller,
+                decoration: const InputDecoration(hintText: 'Nombre de la categoría'),
+                textCapitalization: TextCapitalization.sentences,
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+                  child: const Text('Crear'),
                 ),
-              );
-              if (result != null && result.isNotEmpty) {
-                setState(() {
-                  _selectedCategoryName = result;
-                  _categories.add(Category(name: result));
-                });
-              }
-            } else {
-              setState(() => _selectedCategoryName = val);
-            }
-          },
-        ),
-      ],
+              ],
+            ),
+          );
+          if (result != null && result.isNotEmpty) {
+            setState(() {
+              _selectedCategoryName = result;
+              _categories.add(Category(name: result));
+            });
+          }
+        } else {
+          setState(() => _selectedCategoryName = val);
+        }
+      },
     );
   }
 
   Widget _buildTypeSelector() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        CustomButton(
-          text: 'Income',
-          rightIcon: Icon(Bootstrap.arrow_down_left),
-          onPressed: () {
-            setState(() => _type = 'income');
-          },
-          bgColor: _type == 'income'
+        Expanded(
+          child: CustomButton(
+            text: 'Income',
+            rightIcon: const Icon(Bootstrap.arrow_down_left, size: 20),
+            onPressed: () => setState(() => _type = 'income'),
+            backgroundColor: _type == 'income'
               ? AppColors.purple.withValues(alpha: 0.5)
               : AppColors.white.withValues(alpha: 0.5),
+          ),
         ),
-        CustomButton(
-          text: 'Expense',
-          rightIcon: Icon(Bootstrap.arrow_up_right,),
-          onPressed: () {
-            setState(() => _type = 'expense');
-          },
-          bgColor: _type == 'expense'
+        const SizedBox(width: 16),
+        Expanded(
+          child: CustomButton(
+            text: 'Expense',
+            rightIcon: const Icon(Bootstrap.arrow_up_right, size: 20),
+            onPressed: () => setState(() => _type = 'expense'),
+            backgroundColor: _type == 'expense'
               ? AppColors.purple.withValues(alpha: 0.5)
               : AppColors.white.withValues(alpha: 0.5),
+          ),
         ),
       ],
     );

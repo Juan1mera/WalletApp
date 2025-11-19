@@ -1,6 +1,9 @@
 // lib/presentation/widgets/app_drawer.dart
 import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wallet_app/core/constants/colors.dart';
+import 'package:wallet_app/core/constants/fonts.dart';
 
 class AppDrawer extends StatelessWidget {
   final int currentIndex;
@@ -12,29 +15,94 @@ class AppDrawer extends StatelessWidget {
     required this.onItemTapped,
   });
 
+  // === DATOS DEL USUARIO ===
+  User? get _user => Supabase.instance.client.auth.currentUser;
+  String? get _displayName => _user?.userMetadata?['display_name'] ?? 
+                            _user?.userMetadata?['name'] ?? 
+                            _user?.email?.split('@').first;
+  String? get _avatarUrl => _user?.userMetadata?['avatar_url'];
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: AppColors.black,
+      backgroundColor: AppColors.white,
       child: Column(
         children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              color: AppColors.purple,
-            ),
-            child: Center(
-              child: Text(
-                'Wallet App',
-                style: TextStyle(
-                  color: AppColors.black,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+          // === HEADER CON EFECTO GLASSMORPHISM ===
+          Padding(
+            padding: const EdgeInsets.fromLTRB(1, 80, 16, 20), 
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  decoration: BoxDecoration(
+                    color: AppColors.white.withValues(alpha: 0.60),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      // Avatar
+                      CircleAvatar(
+                        radius: 32,
+                        backgroundColor: AppColors.purple,
+                        backgroundImage: _avatarUrl != null && _avatarUrl!.isNotEmpty
+                            ? NetworkImage(_avatarUrl!)
+                            : null,
+                        child: _avatarUrl == null || _avatarUrl!.isEmpty
+                            ? Text(
+                                (_user?.email?[0] ?? 'U').toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 16),
+                      // Nombre y email
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _displayName ?? 'Usuario',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: AppFonts.clashDisplay,
+                                color: AppColors.black,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _user?.email ?? '',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
 
-          // Opciones del menú
+          const SizedBox(height: 10),
+
+          // === ITEMS DEL MENÚ CON ESTILO REDONDEADO ===
           _buildDrawerItem(
             context,
             index: 0,
@@ -52,14 +120,14 @@ class AppDrawer extends StatelessWidget {
           _buildDrawerItem(
             context,
             index: 2,
-            icon: Icons.view_kanban_outlined,
+            icon: Icons.bar_chart,
             title: 'Stats',
             isSelected: currentIndex == 2,
           ),
           _buildDrawerItem(
             context,
             index: 3,
-            icon: Icons.view_kanban_outlined,
+            icon: Icons.category_outlined,
             title: 'Categories',
             isSelected: currentIndex == 3,
           ),
@@ -73,12 +141,16 @@ class AppDrawer extends StatelessWidget {
 
           const Spacer(),
 
-          // Versión o info adicional (opcional)
+          // Versión
           Padding(
             padding: const EdgeInsets.all(20),
             child: Text(
               'v1.0.0',
-              style: TextStyle(color: AppColors.greyDark),
+              style: TextStyle(
+                color: AppColors.greyDark,
+                fontFamily: AppFonts.clashDisplay,
+                fontSize: 14,
+              ),
             ),
           ),
         ],
@@ -93,26 +165,49 @@ class AppDrawer extends StatelessWidget {
     required String title,
     required bool isSelected,
   }) {
-    return ListTile(
-      selected: isSelected,
-      selectedTileColor: AppColors.purple.withValues(alpha: .3),
-      leading: Icon(
-        icon,
-        color: isSelected ? AppColors.white : AppColors.greyDark,
-        size: 28,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isSelected ? AppColors.white : AppColors.greyDark,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          fontSize: 16,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            onItemTapped(index);
+            Navigator.pop(context);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.purple.withValues(alpha: 0.15)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+              border: isSelected
+                  ? Border.all(color: AppColors.purple.withValues(alpha: 0.3))
+                  : null,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: isSelected ? AppColors.purple : AppColors.grey,
+                  size: 28,
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isSelected ? AppColors.purple : AppColors.greyDark,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    fontSize: 16,
+                    fontFamily: AppFonts.clashDisplay,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      onTap: () {
-        onItemTapped(index);
-        Navigator.pop(context); // Cierra el drawer
-      },
     );
   }
 }

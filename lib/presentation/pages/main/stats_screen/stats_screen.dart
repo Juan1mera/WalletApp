@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:wallet_app/presentation/widgets/ui/custom_header.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -13,7 +12,6 @@ class _StatsScreenState extends State<StatsScreen> {
 @override
 Widget build(BuildContext context) {
   return Scaffold(
-    appBar: CustomHeader(),
     body: Column(
       children: [
         const Expanded(

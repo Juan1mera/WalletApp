@@ -5,6 +5,7 @@ import 'package:wallet_app/core/constants/colors.dart';
 import 'package:wallet_app/models/category_model.dart';
 import 'package:wallet_app/presentation/pages/main/categories_screen/components/category_card.dart';
 import 'package:wallet_app/presentation/pages/main/categories_screen/components/category_edit_dialog.dart';
+import 'package:wallet_app/presentation/widgets/ui/custom_button.dart';
 import 'package:wallet_app/services/category_service.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
@@ -121,75 +122,93 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
 @override
 Widget build(BuildContext context) {
   return Scaffold(
-    floatingActionButton: FloatingActionButton.extended(
-      onPressed: () => _showCategoryDialog(),
-      label: const Text("Nueva categoría"),
-      icon: const Icon(Icons.add),
-      backgroundColor: AppColors.purple,
-      foregroundColor: Colors.white,
-    ),
     body: RefreshIndicator(
       onRefresh: () async {
         _loadCategories();
         await _categoriesFuture;
       },
       color: AppColors.purple,
-      child: FutureBuilder<List<Category>>(
-        future: _categoriesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting && snapshot.data == null) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.purple));
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          // Espacio superior + botón
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 100, 24, 20), 
+              child: CustomButton(
+                text: "Nueva categoría",
+                onPressed: () => _showCategoryDialog(),
+                leftIcon: const Icon(Icons.add),
+              ),
+            ),
+          ),
 
-          final categories = snapshot.data ?? [];
+          // Contenido de la lista (o mensaje vacío)
+          FutureBuilder<List<Category>>(
+            future: _categoriesFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting && snapshot.data == null) {
+                return SliverFillRemaining(
+                  child: const Center(child: CircularProgressIndicator(color: AppColors.purple)),
+                );
+              }
+              if (snapshot.hasError) {
+                return SliverFillRemaining(
+                  child: Center(child: Text('Error: ${snapshot.error}')),
+                );
+              }
 
-          if (categories.isEmpty) {
-            return ListView(
-              physics: const AlwaysScrollableScrollPhysics(), 
-              children: const [
-                SizedBox(height: 200), 
-                Center(
-                  child: Column(
-                    children: [
-                      Icon(Icons.category_outlined, size: 90, color: Colors.grey),
-                      SizedBox(height: 24),
-                      Text(
-                        'No hay categorías aún',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        '¡Crea tu primera categoría!',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                    ],
+              final categories = snapshot.data ?? [];
+
+              if (categories.isEmpty) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 80),
+                    child: Column(
+                      children: const [
+                        Icon(Icons.category_outlined, size: 90, color: Colors.grey),
+                        SizedBox(height: 24),
+                        Text(
+                          'No hay categorías aún',
+                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          '¡Crea tu primera categoría!',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          }
+                );
+              }
 
-          // Lista normal de categorías
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(24, 100, 24, 100),
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              final cat = categories[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: CategoryCard(
-                  category: cat,
-                  onEdit: () => _showCategoryDialog(category: cat),
-                  onDelete: () => _deleteCategory(cat),
+              // Lista de categorías
+              return SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                sliver: SliverList.builder(
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final cat = categories[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: CategoryCard(
+                        category: cat,
+                        onEdit: () => _showCategoryDialog(category: cat),
+                        onDelete: () => _deleteCategory(cat),
+                      ),
+                    );
+                  },
                 ),
               );
             },
-          );
-        },
+          ),
+
+          // Espacio inferior para que el último elemento no quede pegado al botón al hacer scroll
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 100),
+          ),
+        ],
       ),
     ),
   );

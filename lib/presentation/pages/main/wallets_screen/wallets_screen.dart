@@ -11,7 +11,7 @@ import 'package:wallet_app/presentation/widgets/ui/custom_modal.dart';
 import 'package:wallet_app/presentation/widgets/ui/custom_text_field.dart';
 import 'package:wallet_app/presentation/widgets/ui/custom_number_field.dart';
 import 'package:wallet_app/presentation/widgets/ui/custom_select.dart';
-import 'package:wallet_app/providers/wallet_provider.dart'; 
+import 'package:wallet_app/providers/wallet_provider.dart';
 
 class WalletsScreen extends ConsumerStatefulWidget {
   const WalletsScreen({super.key});
@@ -54,21 +54,27 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomTextField(controller: _nameController, hintText: 'Ej: Efectivo, Nubank, Ahorros', icon: Icons.wallet),
+                CustomTextField(
+                  controller: _nameController,
+                  hintText: 'Ej: Efectivo, Nubank, Ahorros',
+                  icon: Icons.wallet,
+                ),
                 const SizedBox(height: 20),
                 CustomSelect<String>(
                   label: 'Moneda',
                   items: Currencies.codes,
                   selectedItem: _selectedCurrency,
                   getDisplayText: (code) => code,
-                  onChanged: (val) => setModalState(() => _selectedCurrency = val!),
+                  onChanged: (val) =>
+                      setModalState(() => _selectedCurrency = val!),
                   dynamicIcon: (code) => Currencies.getIcon(code!),
                 ),
                 const SizedBox(height: 20),
                 CustomNumberField(
                   currency: _selectedCurrency,
                   hintText: '0.00',
-                  onChanged: (value) => setModalState(() => _initialBalance = value),
+                  onChanged: (value) =>
+                      setModalState(() => _initialBalance = value),
                 ),
                 const SizedBox(height: 24),
                 _buildTypeSelector(setModalState),
@@ -80,27 +86,29 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         },
       ),
       actions: [
-        CustomButton(text: 'Cancell', bgColor: Colors.grey.shade300, textColor: Colors.black87, onPressed: () => Navigator.pop(context)),
+        CustomButton(
+          text: 'Cancell',
+          onPressed: () => Navigator.pop(context),
+        ),
         CustomButton(
           text: 'Create',
           onPressed: _isLoading ? null : _createWallet,
           isLoading: _isLoading,
-          bgColor: AppColors.purple,
         ),
       ],
     );
   }
 
   Widget _buildTypeSelector(StateSetter s) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25),
-        child: Row(
-          children: [
-            Expanded(child: _typeTile('cash', 'Efectivo', Icons.payments, s)),
-            const SizedBox(width: 12),
-            Expanded(child: _typeTile('bank', 'Banco', Icons.account_balance, s)),
-          ],
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 25),
+    child: Row(
+      children: [
+        Expanded(child: _typeTile('cash', 'Efectivo', Icons.payments, s)),
+        const SizedBox(width: 12),
+        Expanded(child: _typeTile('bank', 'Banco', Icons.account_balance, s)),
+      ],
+    ),
+  );
 
   Widget _typeTile(String v, String l, IconData i, StateSetter s) {
     final sel = _selectedType == v;
@@ -110,47 +118,63 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(36),
-          border: Border.all(color: sel ? AppColors.black : Colors.transparent, width: 2),
+          border: Border.all(
+            color: sel ? AppColors.black : Colors.transparent,
+            width: 2,
+          ),
         ),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(i, color: sel ? AppColors.black : AppColors.greyDark),
-          const SizedBox(width: 8),
-          Text(l, style: TextStyle(fontWeight: sel ? FontWeight.w600 : FontWeight.normal, fontFamily: AppFonts.clashDisplay)),
-        ]),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(i, color: sel ? AppColors.black : AppColors.greyDark),
+            const SizedBox(width: 8),
+            Text(
+              l,
+              style: TextStyle(
+                fontWeight: sel ? FontWeight.w600 : FontWeight.normal,
+                fontFamily: AppFonts.clashDisplay,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildColorSelector(StateSetter s) => Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: AppColors.walletColors.map((c) {
-              final sel = _selectedColor == c;
-              return GestureDetector(
-                onTap: () => s(() => _selectedColor = c),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Color(int.parse(c.replaceFirst('#', '0xFF'))),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: sel ? 4 : 0),
-                  ),
-                  child: sel ? const Icon(Icons.check, color: Colors.white, size: 28) : null,
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 16,
+        children: AppColors.walletColors.map((c) {
+          final sel = _selectedColor == c;
+          return GestureDetector(
+            onTap: () => s(() => _selectedColor = c),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Color(int.parse(c.replaceFirst('#', '0xFF'))),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: sel ? 4 : 0),
+              ),
+              child: sel
+                  ? const Icon(Icons.check, color: Colors.white, size: 28)
+                  : null,
+            ),
+          );
+        }).toList(),
+      ),
+    ),
+  );
 
   Future<void> _createWallet() async {
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Por favor ingresa un nombre')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor ingresa un nombre')),
+      );
       return;
     }
 
@@ -172,12 +196,16 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
       await ref.read(walletServiceProvider).createWallet(wallet);
       if (mounted) {
         Navigator.pop(context);
-        ref.read(walletsProvider.notifier).refresh(); 
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Cartera creada!')));
+        ref.read(walletsProvider.notifier).refresh();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('¡Cartera creada!')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -198,7 +226,9 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         onRefresh: () => ref.read(walletsProvider.notifier).refresh(),
         color: AppColors.purple,
         child: walletsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.purple)),
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.purple),
+          ),
           error: (err, _) => Center(child: Text('Error: $err')),
           data: (wallets) {
             if (wallets.isEmpty) {
@@ -209,13 +239,28 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                   Center(
                     child: Column(
                       children: [
-                        Icon(Icons.wallet, size: 90, color: Colors.grey.shade400),
+                        Icon(
+                          Icons.wallet,
+                          size: 90,
+                          color: Colors.grey.shade400,
+                        ),
                         const SizedBox(height: 24),
-                        const Text('No tienes carteras aún', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+                        const Text(
+                          'No tienes carteras aún',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 12),
-                        Text('Toca el botón + para crear tu primera cartera',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+                        Text(
+                          'Toca el botón + para crear tu primera cartera',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -231,7 +276,12 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ViewWalletScreen(walletId: wallet.id!))),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ViewWalletScreen(walletId: wallet.id!),
+                      ),
+                    ),
                     child: WalletCard(wallet: wallet),
                   ),
                 );

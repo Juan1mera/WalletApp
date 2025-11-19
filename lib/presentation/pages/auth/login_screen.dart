@@ -228,8 +228,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: CustomButton(
                   text: 'Iniciar sesión',
                   onPressed: _isFormValid() ? _login : null,
-                  bgColor: AppColors.purple,
-                  textColor: AppColors.black,
                   isLoading: _isLoading,
                 ),
               ),
@@ -267,8 +265,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       MaterialPageRoute(builder: (context) => const RegisterScreen()),
                     );
                   },
-                  bgColor: AppColors.black,
-                  textColor: AppColors.white,
                 ),
               ),
 

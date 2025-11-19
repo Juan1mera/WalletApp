@@ -239,8 +239,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: CustomButton(
                   text: 'Regístrate',
                   onPressed: _isFormValid() ? _register : null,
-                  bgColor: AppColors.purple,
-                  textColor: AppColors.black,
                   isLoading: _isLoading,
                 ),
               ),
@@ -278,8 +276,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       MaterialPageRoute(builder: (context) => const LoginScreen()),
                     );
                   },
-                  bgColor: AppColors.black,
-                  textColor: AppColors.white,
                 ),
               ),
 

@@ -52,7 +52,7 @@ class TransactionCardSimple extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.white.withValues(alpha: 0.60),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: .2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [

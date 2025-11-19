@@ -95,6 +95,7 @@ class TransactionsHomeSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.white.withValues(alpha: .6),
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             padding: const EdgeInsets.all(16),
             child: Column(

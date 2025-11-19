@@ -295,20 +295,22 @@ class _CreateTransactionConvertScreenState
                     hintText: "Ej: Pago a amigo, viaje...",
                   ),
 
-                  const SizedBox(height: 30),
 
-                  CustomButton(
-                    text: "Transferir",
-                    onPressed:
-                        (_fromWallet == null ||
-                            _toWallet == null ||
-                            _amount <= 0 ||
-                            _isConverting)
-                        ? null
-                        : _makeTransfer,
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: CustomButton(
+                      text: "Convert",
+                      leftIcon: Icon(Bootstrap.arrow_down_up),
+                      onPressed:
+                          (_fromWallet == null ||
+                              _toWallet == null ||
+                              _amount <= 0 ||
+                              _isConverting)
+                          ? null
+                          : _makeTransfer,
+                    ),
                   ),
 
-                  const SizedBox(height: 40),
                 ],
               ),
             ),
