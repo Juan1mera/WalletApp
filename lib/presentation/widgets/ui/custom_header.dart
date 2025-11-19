@@ -51,15 +51,13 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
                       left: 0,
                       child: PopupMenuButton<dynamic>(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         offset: const Offset(0, 55), // justo debajo del botón
                         itemBuilder: (context) =>
                             menuItems ?? <PopupMenuEntry<dynamic>>[],
                         onSelected: (value) {
                           onMenuSelected?.call();
-                          // Si usas PopupMenuItem con value, puedes manejarlo aquí también
-                          // o dejar que cada item tenga su propio onTap
                         },
                         child: Container(
                           width: 55,
@@ -67,13 +65,6 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
                           decoration: const BoxDecoration(
                             color: AppColors.white,
                             shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 6,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
                           ),
                           child: const Icon(
                             Icons.more_vert_rounded,
@@ -101,13 +92,6 @@ class CustomHeader extends StatelessWidget implements PreferredSizeWidget {
                           height: 55,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 6,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
                           ),
                           child: CircleAvatar(
                             radius: 27.5,

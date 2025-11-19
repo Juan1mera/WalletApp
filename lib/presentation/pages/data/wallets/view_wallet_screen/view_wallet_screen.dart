@@ -161,7 +161,7 @@ class _ViewWalletScreenState extends ConsumerState<ViewWalletScreen> {
                 children: [
                   Icon(
                     _wallet!.isFavorite ? Icons.star : Icons.star_border,
-                    color: _wallet!.isFavorite ? Colors.amber : null,
+                    color: _wallet!.isFavorite ? AppColors.yellow : null,
                   ),
                   const SizedBox(width: 12),
                   Text(
@@ -177,9 +177,9 @@ class _ViewWalletScreenState extends ConsumerState<ViewWalletScreen> {
               onTap: _deleteWallet,
               child: const Row(
                 children: [
-                  Icon(Icons.delete_forever, color: Colors.red),
+                  Icon(Icons.delete_forever, color: AppColors.red),
                   SizedBox(width: 12),
-                  Text('Eliminar cartera', style: TextStyle(color: Colors.red)),
+                  Text('Eliminar cartera', style: TextStyle(color: AppColors.red)),
                 ],
               ),
             ),

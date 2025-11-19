@@ -43,6 +43,9 @@ class _CreateTransactionScreenState
   @override
   void initState() {
     super.initState();
+    if (widget.initialType == 'income' || widget.initialType == 'expense') {
+    _type = widget.initialType!;
+  }
     _loadCategories();
   }
 

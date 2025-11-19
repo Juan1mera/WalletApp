@@ -25,7 +25,7 @@ class WalletCard extends StatelessWidget {
       height: 190,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: walletColor,
+        color: walletColor.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Padding(

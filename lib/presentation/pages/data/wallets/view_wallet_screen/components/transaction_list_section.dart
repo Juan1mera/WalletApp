@@ -20,14 +20,15 @@ class TransactionListSection extends StatelessWidget {
 
   String _getSymbol(String currency) {
     const map = {
-      'USD': r'$',
-      'EUR': '€',
+      'USD': r'USD',
+      'EUR': 'EUR',
       'GBP': '£',
       'JPY': '¥',
       'MXN': r'$',
       'BRL': r'R$',
       'INR': '₹',
-      'COP': r'$',
+      'COP': r'COP',
+      'RUB': r'RUB',
     };
     return map[currency] ?? currency;
   }
